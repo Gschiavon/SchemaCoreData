@@ -2,6 +2,8 @@ package FileReader
 
 import java.io.{BufferedWriter, File, FileWriter}
 import java.util.{Calendar, Date}
+import java.text.DateFormat
+import java.text.SimpleDateFormat
 
 import org.apache.spark.SparkContext
 import com.typesafe.config.Config
@@ -23,8 +25,8 @@ case class Utils(sparkContext: SparkContext) (implicit conf: Config) extends Ser
         .map(lines => {
           lines(2) match {
             case "DATE" => s"$tableName;${lines(0)};${lines(1)};$now;dd/mm/yyyy;string;Falso;Falso;${lines(2)};$tableName\n"
-            case "VARCHAR" => s"$tableName;${lines(0)};${lines(1)};$now;;string;Falso;Falso;${lines(2)}(${lines(3)})$tableName\n"
-            case _ => s"$tableName;${lines(0)};${lines(1)};$now;;string;Falso;Falso;${lines(2)}$tableName\n"
+            case "VARCHAR" => s"$tableName;${lines(0)};${lines(1)};$now;;string;Falso;Falso;${lines(2)}(${lines(3)});$tableName\n"
+            case _ => s"$tableName;${lines(0)};${lines(1)};$now;;string;Falso;Falso;${lines(2)};$tableName\n"
           }
         })
     data
@@ -32,7 +34,6 @@ case class Utils(sparkContext: SparkContext) (implicit conf: Config) extends Ser
 
   def writeToFile(rdd: RDD[String], filePath: String): Unit = {
     val lines = rdd.collect
-
     val file = new File(filePath)
     val bw = new BufferedWriter(new FileWriter(file))
     val header = conf.getString("csv.header")
@@ -41,17 +42,21 @@ case class Utils(sparkContext: SparkContext) (implicit conf: Config) extends Ser
     for(value <- lines){
       bw2.write(value)
     }
+
     bw.close
     bw2.close
   }
 
   def addHeader(header: String, file: BufferedWriter): BufferedWriter = {
-    file.write(s"$header\n ")
+    file.write(s"$header")
+    file.newLine()
     file
   }
 
-  def getTime: Date = {
-    val now = Calendar.getInstance()
-    now.getTime
+  def getTime: String = {
+    val currentDateTime = System.currentTimeMillis
+    val currenDate = new Date(currentDateTime)
+    val dateFormat = new SimpleDateFormat("dd/MM/yy HH:mm:ss")
+    dateFormat.format(currenDate)
   }
 }
