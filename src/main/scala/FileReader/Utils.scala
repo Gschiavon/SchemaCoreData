@@ -12,9 +12,8 @@ import org.apache.spark.rdd.RDD
 
 case class Utils(sparkContext: SparkContext) (implicit conf: Config) extends Serializable{
 
-  def read(resource: String): RDD[String] = {
+  def read(resource: String, delimiter: String): RDD[String] = {
     val rdd = sparkContext.textFile(resource)
-    val delimiter = conf.getString("csv.delimiter")
     val tableName = conf.getString("database.table.name")
     val now = getTime
 
@@ -22,11 +21,12 @@ case class Utils(sparkContext: SparkContext) (implicit conf: Config) extends Ser
       rdd
         .mapPartitionsWithIndex((i, it) => if (i == 0) it.drop(1) else it)
         .map(line => line.split(delimiter, -1).toList)
+        .map(line => line.map(_.trim))
         .map(lines => {
           lines(2) match {
-            case "DATE" => s"$tableName;${lines(0)};${lines(1)};$now;dd/mm/yyyy;string;Falso;Falso;${lines(2)};$tableName\n"
-            case "VARCHAR" => s"$tableName;${lines(0)};${lines(1)};$now;;string;Falso;Falso;${lines(2)}(${lines(3)});$tableName\n"
-            case _ => s"$tableName;${lines(0)};${lines(1)};$now;;string;Falso;Falso;${lines(2)};$tableName\n"
+            case "DATE" => s"$tableName;${lines(0)};${lines(1)};$now;dd/mm/yyyy;string;Falso;Falso;${lines(2).toLowerCase};${lines(0)}\n"
+            case "VARCHAR" => s"$tableName;${lines(0)};${lines(1)};;;string;Falso;Falso;${lines(2)}(${lines(3)});${lines(0)}\n"
+            case _ => s"$tableName;${lines(0)};${lines(1)};;;string;Falso;Falso;${lines(2).toLowerCase};${lines(0)}\n"
           }
         })
     data

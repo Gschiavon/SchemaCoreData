@@ -15,14 +15,14 @@ object Main extends Serializable {
 
   def main(args: Array[String]): Unit = {
 
-    if(args.size >= 1) {
-
-      val fileOutputPath = args(1)
-      val utils = Utils(sc)
+    if(args.size >= 2) {
       val fileInputPath = args(0)
-      val rdd = utils.read(fileInputPath)
+      val fileOutputPath = args(1)
+      val delimiter = args(2)
+      val utils = Utils(sc)
+
+      val rdd = utils.read(fileInputPath, delimiter)
       utils.writeToFile(rdd, fileOutputPath)
     }
-
   }
 }
