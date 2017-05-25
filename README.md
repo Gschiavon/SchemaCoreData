@@ -1,10 +1,14 @@
 # SchemaCoreData
 Generates a schema based in a file
 
-To generate the .jar 
+## Build
+To build the project, run the tests and generate jar artifact you should execute:
+```sh
+$ mvn clean package
+```
 
-mvn clean package
-
-then 
-
-java -jar <path-to-jar> <input-file> <output-file> <delimiter>
+## Execute
+To execute the project,you should execute:
+```sh
+$ java -jar <path-to-jar> <input-file> <output-file> <delimiter>
+```
